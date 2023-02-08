@@ -1,4 +1,4 @@
-import Product from "../domain/entity/product";
+import Product from "../entity/product";
 import ProductService from "./Product.service";
 
 describe("Product service unit teste", () => {
