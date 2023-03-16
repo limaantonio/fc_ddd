@@ -41,8 +41,6 @@ describe("Product repository test", () => {
     const product = new Product("1", "Product 1", 100);
     await productRepository.create(product);
 
-    const productModel = await ProductModel.findOne({ where: { id: "1" } });
-
     product.changeName("Product 1 updated");
     product.changePrice(200);
 
