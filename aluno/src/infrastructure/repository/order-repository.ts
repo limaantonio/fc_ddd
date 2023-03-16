@@ -6,14 +6,28 @@ import OrderModel from "../db/sequelize/model/order.model";
 
 export default class OrderRepository implements OrderRepositoryInterface {
   async update(data: Order): Promise<void> {
-    await OrderModel.update(
-      {
-        customer_id: data.customerId,
-        total: data.total(),
-      },
-      { where: { id: data.id } }
-    );
+    const sequelize = OrderModel.sequelize;
+    await sequelize.transaction(async (t) => {
+      await OrderItemModel.destroy({
+        where: { order_id: data.id },
+        transaction: t,
+      });
+      const items = data.items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        product_id: item.productId,
+        quantity: item.quantity,
+        order_id: data.id,
+      }));
+      await OrderItemModel.bulkCreate(items, { transaction: t });
+      await OrderModel.update(
+        { total: data.total() },
+        { where: { id: data.id }, transaction: t }
+      );
+    });
   }
+
   async find(id: string): Promise<Order> {
     let orderModel;
     try {

@@ -93,50 +93,63 @@ describe("Order repository test", () => {
     const product = new Product("123", "Product 1", 10);
     await productRepository.create(product);
 
-    const orderItem = new OrderItem(
+    const ordemItem = new OrderItem(
       "1",
       product.id,
       product.name,
       product.price,
-
       2
     );
 
-    let order = new Order("123", "123", [orderItem]);
+    let order = new Order("123", "123", [ordemItem]);
 
     const orderRepository = new OrderRepository();
     await orderRepository.create(order);
 
-    const orderItem2 = new OrderItem(
-      "2",
-      product.id,
-      product.name,
-      product.price,
-
-      1
-    );
-
-    order = new Order("123", "123", [orderItem2]);
-
-    await orderRepository.update(order);
-
-    const orderModelUpadted = await OrderModel.findOne({
+    let orderModel = await OrderModel.findOne({
       where: { id: order.id },
       include: ["items"],
     });
 
-    expect(orderModelUpadted.toJSON()).toStrictEqual({
+    const product2 = new Product("124", "Product 2", 10);
+    await productRepository.create(product2);
+
+    const ordemItem2 = new OrderItem(
+      "2",
+      product2.id,
+      product2.name,
+      product2.price,
+      1
+    );
+    order = new Order("123", "123", [ordemItem, ordemItem2]);
+
+    await orderRepository.update(order);
+
+    orderModel = await OrderModel.findOne({
+      where: { id: order.id },
+      include: ["items"],
+    });
+
+    expect(orderModel.toJSON()).toStrictEqual({
       id: "123",
       customer_id: "123",
       total: order.total(),
       items: [
         {
-          id: orderItem.id,
-          name: orderItem.name,
-          price: orderItem.price,
-          quantity: orderItem.quantity,
+          id: ordemItem.id,
+          name: ordemItem.name,
+          price: ordemItem.price,
+          quantity: ordemItem.quantity,
           order_id: "123",
           product_id: "123",
+        },
+        {
+          id: ordemItem2.id,
+          name: ordemItem2.name,
+          price: ordemItem2.price,
+          quantity: ordemItem2.quantity,
+          order_id: "123",
+          product_id: "124",
         },
       ],
     });
